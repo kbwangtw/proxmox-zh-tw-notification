@@ -1,0 +1,7 @@
+Proxmox Backup Server 有下列軟體套件可更新：
+{{#each updates }}
+    {{Package}}：{{OldVersion}} → {{Version~}}
+{{/each }}
+
+請前往網頁管理介面進行更新：
+<https://{{fqdn}}:{{port}}/#pbsServerAdministration:updates>

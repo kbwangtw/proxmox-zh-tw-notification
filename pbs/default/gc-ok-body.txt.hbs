@@ -1,0 +1,21 @@
+資料儲存區：          {{datastore}}
+工作 ID：             {{status.upid}}
+索引檔案數量：        {{status.index-file-count}}
+
+已移除垃圾資料：      {{human-bytes status.removed-bytes}}
+已移除區塊：          {{status.removed-chunks}}
+已移除損壞區塊：      {{status.removed-bad}}
+
+剩餘損壞區塊：        {{status.still-bad}}
+待移除資料：          {{human-bytes status.pending-bytes}}（共 {{status.pending-chunks}} 個區塊）
+
+原始資料使用量：      {{human-bytes status.index-data-bytes}}
+磁碟使用量：          {{human-bytes status.disk-bytes}}（{{relative-percentage status.disk-bytes status.index-data-bytes}}）
+磁碟區塊數量：        {{status.disk-chunks}}
+
+重複資料刪除比率：    {{deduplication-factor}}
+
+垃圾資料回收成功。
+
+如需詳細資訊，請前往網頁管理介面：
+<https://{{fqdn}}:{{port}}/#DataStore-{{datastore}}>
