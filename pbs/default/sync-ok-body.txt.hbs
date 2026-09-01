@@ -1,12 +1,17 @@
-工作 ID：             {{job.id}}
-目標資料儲存區：      {{job.store}}
-{{#if job.remote~}}
-遠端：                {{job.remote}}
-遠端資料儲存區：      {{job.remote-store}}
-{{else~}}
-本機來源資料儲存區：  {{job.remote-store}}
-{{/if}}
-同步作業成功。
+PBS 資料同步執行結果
+====================
 
-如需詳細資訊，請前往網頁管理介面：
-<https://{{fqdn}}:{{port}}/#DataStore-{{job.store}}>
+執行狀態：成功
+工作 ID：{{job-id}}
+目的資料儲存區：{{datastore}}
+{{#if remote~}}
+遠端名稱：{{remote}}
+來源資料儲存區：{{remote-datastore}}
+{{else~}}
+本機來源資料儲存區：{{remote-datastore}}
+{{/if}}
+
+資料同步已成功完成。
+
+詳細資訊：
+<{{base-url}}/#DataStore:{{datastore}}>
