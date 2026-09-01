@@ -1,7 +1,12 @@
-工作 ID：     {{jobname}}
-資料儲存區：  {{store}}
+PBS 備份保留清理執行結果
+========================
 
-清理作業失敗：{{error}}
+執行狀態：失敗
+工作 ID：{{job-id}}
+資料儲存區：{{datastore}}
 
-如需詳細資訊，請前往網頁管理介面的工作記錄：
-<https://{{fqdn}}:{{port}}/#pbsServerAdministration:tasks>
+錯誤訊息：
+{{error}}
+
+請至 PBS Web 介面查看詳細工作記錄：
+<{{base-url}}/#pbsServerAdministration:tasks>
