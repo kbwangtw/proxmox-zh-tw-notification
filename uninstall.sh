@@ -44,12 +44,26 @@ uninstall_product() {
   }
   target="$(<"$target_file")"
 
-  while IFS= read -r filename; do
-    [[ -n "$filename" ]] && rm -f -- "${target}/${filename}"
-  done < "$list_file"
+  if [[ "$product" == "pve" ]]; then
+    while IFS= read -r filename; do
+      [[ -n "$filename" ]] || continue
+      if [[ -f "${original_dir}/${filename}" ]]; then
+        cp -- "${original_dir}/${filename}" "${target}/${filename}"
+      else
+        rm -f -- "${target}/${filename}"
+      fi
+    done < "$list_file"
+  else
+    while IFS= read -r filename; do
+      [[ -n "$filename" ]] && rm -f -- "${target}/${filename}"
+    done < "$list_file"
+
+    if [[ -d "$original_dir" ]]; then
+      cp -a -- "$original_dir"/. "$target"/
+    fi
+  fi
 
   if [[ -d "$original_dir" ]]; then
-    cp -a -- "$original_dir"/. "$target"/
     log "已還原首次安裝前的 ${product^^} 自訂模板。"
   fi
 
