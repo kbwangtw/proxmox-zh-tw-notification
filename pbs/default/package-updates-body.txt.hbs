@@ -1,7 +1,8 @@
-Proxmox Backup Server 有下列軟體套件可更新：
-{{#each updates }}
-    {{Package}}：{{OldVersion}} → {{Version~}}
-{{/each }}
+Proxmox Backup Server 有可用的套件更新：
 
-請前往網頁管理介面進行更新：
-<https://{{fqdn}}:{{port}}/#pbsServerAdministration:updates>
+{{#each available-updates}}
+    {{this.package-name}}：{{#if this.installed-version}}{{this.installed-version}} ->{{else}}新增套件，{{/if}} {{this.available-version}}
+{{/each}}
+
+請至 PBS Web 介面執行更新：
+<{{base-url}}/#pbsServerAdministration:updates>
