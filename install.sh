@@ -9,6 +9,7 @@ STATE_ROOT="${PROXMOX_ZH_TW_STATE_ROOT:-/var/lib/proxmox-zh-tw-notification}"
 ROOT_PREFIX="${PROXMOX_ZH_TW_ROOT:-}"
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" 2>/dev/null && pwd -P)"
 MODE="auto"
+tmp_dir=""
 
 PVE_FILES=(
   vzdump-subject.txt.hbs
@@ -41,6 +42,12 @@ EOF
 
 log() { printf '[proxmox-zh-TW] %s\n' "$*"; }
 die() { printf '[proxmox-zh-TW] 錯誤：%s\n' "$*" >&2; exit 1; }
+cleanup() {
+  if [[ -n "${tmp_dir:-}" && -d "${tmp_dir:-}" ]]; then
+    rm -rf -- "$tmp_dir"
+  fi
+}
+trap cleanup EXIT
 
 while (($#)); do
   case "$1" in
@@ -93,6 +100,17 @@ fetch_template() {
   fi
 }
 
+copy_to_target() {
+  local product="$1" source="$2" destination="$3"
+
+  if [[ "$product" == "pve" ]]; then
+    # /etc/pve is pmxcfs: it manages permissions and rejects chmod.
+    cp -- "$source" "$destination"
+  else
+    install -m 0644 "$source" "$destination"
+  fi
+}
+
 install_product() {
   local product="$1" target="$2"
   shift 2
@@ -100,10 +118,15 @@ install_product() {
   local state_dir="${STATE_ROOT}/${product}"
   local backup_dir="${BACKUP_ROOT}/${product}-${timestamp}"
   local original_dir="${state_dir}/original"
-  local tmp_dir
+  local rollback_dir filename
   tmp_dir="$(mktemp -d "${TMPDIR:-/tmp}/proxmox-zh-tw.XXXXXX")"
-  trap 'rm -rf -- "$tmp_dir"' EXIT
-  mkdir -p "$target" "$state_dir"
+  rollback_dir="${tmp_dir}/rollback"
+  mkdir -p "$target" "$state_dir" "$rollback_dir"
+
+  # Fetch every template before changing the target or recording installation state.
+  for filename in "${files[@]}"; do
+    fetch_template "$product" "$filename" "${tmp_dir}/${filename}"
+  done
 
   if find "$target" -mindepth 1 -maxdepth 1 -print -quit | grep -q .; then
     mkdir -p "$backup_dir"
@@ -119,17 +142,38 @@ install_product() {
     : > "${state_dir}/original-recorded"
   fi
 
+  # Snapshot only managed paths so a partial copy can be rolled back safely.
   for filename in "${files[@]}"; do
-    fetch_template "$product" "$filename" "${tmp_dir}/${filename}"
+    if [[ -e "${target}/${filename}" ]]; then
+      cp -a -- "${target}/${filename}" "${rollback_dir}/${filename}"
+    else
+      : > "${rollback_dir}/${filename}.absent"
+    fi
   done
 
   for filename in "${files[@]}"; do
-    install -m 0644 "${tmp_dir}/${filename}" "${target}/${filename}"
+    if ! copy_to_target "$product" "${tmp_dir}/${filename}" "${target}/${filename}"; then
+      log "安裝 ${product^^} 模板失敗，正在還原本次變更。"
+      for filename in "${files[@]}"; do
+        if [[ -e "${rollback_dir}/${filename}" ]]; then
+          copy_to_target "$product" "${rollback_dir}/${filename}" "${target}/${filename}" || \
+            log "警告：無法還原 ${target}/${filename}"
+        else
+          rm -f -- "${target}/${filename}" || \
+            log "警告：無法移除 ${target}/${filename}"
+        fi
+      done
+      return 1
+    fi
   done
-  printf '%s\n' "${files[@]}" > "${state_dir}/installed-files"
-  printf '%s\n' "$target" > "${state_dir}/target"
-  rm -rf -- "$tmp_dir"
-  trap - EXIT
+
+  # installed-files is the completion marker consumed by uninstall.sh.
+  printf '%s\n' "$target" > "${tmp_dir}/target"
+  printf '%s\n' "${files[@]}" > "${tmp_dir}/installed-files"
+  mv -f -- "${tmp_dir}/target" "${state_dir}/target"
+  mv -f -- "${tmp_dir}/installed-files" "${state_dir}/installed-files"
+  cleanup
+  tmp_dir=""
   log "已安裝 ${product^^} 繁體中文通知模板至 ${target}"
 }
 
