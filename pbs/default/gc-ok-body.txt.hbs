@@ -1,21 +1,30 @@
-資料儲存區：          {{datastore}}
-工作 ID：             {{status.upid}}
-索引檔案數量：        {{status.index-file-count}}
+PBS 垃圾資料回收執行結果
+========================
 
-已移除垃圾資料：      {{human-bytes status.removed-bytes}}
-已移除區塊：          {{status.removed-chunks}}
-已移除損壞區塊：      {{status.removed-bad}}
+執行狀態：成功
+資料儲存區：{{datastore}}
+工作 ID：
+{{upid}}
 
-剩餘損壞區塊：        {{status.still-bad}}
-待移除資料：          {{human-bytes status.pending-bytes}}（共 {{status.pending-chunks}} 個區塊）
+空間回收結果
+------------
+索引檔案數：{{index-file-count}}
+已回收空間：{{human-bytes removed-bytes}}
+已移除區塊：{{removed-chunks}}
+已移除損壞區塊：{{removed-bad}}
 
-原始資料使用量：      {{human-bytes status.index-data-bytes}}
-磁碟使用量：          {{human-bytes status.disk-bytes}}（{{relative-percentage status.disk-bytes status.index-data-bytes}}）
-磁碟區塊數量：        {{status.disk-chunks}}
+剩餘損壞區塊：{{still-bad}}
+等待移除空間：{{human-bytes pending-bytes}}（{{pending-chunks}} 個區塊）
 
-重複資料刪除比率：    {{deduplication-factor}}
+儲存空間統計
+------------
+原始資料使用量：{{human-bytes index-data-bytes}}
+實際磁碟使用量：{{human-bytes disk-bytes}}（{{relative-percentage disk-bytes index-data-bytes}}）
+磁碟區塊數：{{disk-chunks}}
 
-垃圾資料回收成功。
+重複資料刪除倍率：{{deduplication-factor}}
 
-如需詳細資訊，請前往網頁管理介面：
-<https://{{fqdn}}:{{port}}/#DataStore-{{datastore}}>
+垃圾資料回收已成功完成。
+
+詳細資訊：
+<{{base-url}}/#DataStore:{{datastore}}>
